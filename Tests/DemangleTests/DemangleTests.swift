@@ -27,3 +27,11 @@ struct CppTests {
         #expect(sym.type == Demangle.Compiler.itanium)
     }
 }
+
+struct SwiftTests {
+    @Test func type() {
+        let input = "_TFC4test7MyClass9calculatefS0_FT1xSi_Si"
+        let sym = Demangle.MangledSymbol(name: input)
+        #expect(sym.type == Demangle.Compiler.swift)
+    }
+}

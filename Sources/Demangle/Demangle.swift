@@ -7,8 +7,10 @@ public enum Compiler: Sendable {
 }
 
 public let compilerPrefixes: [String: Compiler] = [
-    "_Z": Compiler.itanium,
-    "_R": .rust,
+    "_R": Compiler.rust,
+    "_T": Compiler.swift,
+    "_Z": .itanium,
+
 ]
 
 public class MangledSymbol {
