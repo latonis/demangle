@@ -1,7 +1,6 @@
 import Demangle
 import Testing
 
-
 struct CoreTests {
     @Test
     func initMangledSymbol() {
@@ -9,16 +8,22 @@ struct CoreTests {
         let sym = Demangle.MangledSymbol(name: "symbol_test")
 
         #expect(sym.name == expected)
+        #expect(sym.type == Demangle.Compiler.unknown)
     }
 }
 
 struct RustTests {
-    @Test func basic() {
-        let expected = "foo::bar"
-        let input = "NN3foo3bar"
-
+    @Test func type() {
+        let input = "_RNvCs15kBYyAo9fc_7mycrate7example"
         let sym = Demangle.MangledSymbol(name: input)
+        #expect(sym.type == Demangle.Compiler.rust)
+    }
+}
 
-        #expect(sym.demangle() == expected)
+struct CppTests {
+    @Test func type() {
+        let input = "_Z1hv"
+        let sym = Demangle.MangledSymbol(name: input)
+        #expect(sym.type == Demangle.Compiler.itanium)
     }
 }

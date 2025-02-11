@@ -1,27 +1,28 @@
 /// A description
-enum Compiler: String {
+public enum Compiler: Sendable {
     case itanium
     case rust
     case swift
     case unknown
 }
 
-let compilerPrefixes = [
+public let compilerPrefixes: [String: Compiler] = [
     "_Z": Compiler.itanium,
     "_R": .rust,
 ]
 
 public class MangledSymbol {
     public let name: String
-    let type: Compiler
+    public var type: Compiler
 
     public init(name: String) {
         self.name = name
         self.type = Compiler.unknown
+
+        let _ = demangle()
     }
 
     public func demangle() -> String {
-        // parse the string
         let p = Parser(symbol: self)
         p.parse()
         return ""
@@ -37,12 +38,10 @@ class Parser {
 
     func parse() {
         prefix()
-        // func name
-        // params
     }
 
     func prefix() {
-        let prefix = self.symbol.name.prefix(2)
-        print(prefix)
+        let prefix: String.SubSequence = self.symbol.name.prefix(2)
+        self.symbol.type = compilerPrefixes[String(prefix), default: Compiler.unknown]
     }
 }
