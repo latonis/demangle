@@ -26,6 +26,14 @@ struct CppTests {
         let sym = Demangle.MangledSymbol(name: input)
         #expect(sym.type == Demangle.Compiler.itanium)
     }
+
+    @Test func parse() {
+        let input = "_ZN9wikipedia7article6formatEv"
+        let sym = Demangle.MangledSymbol(name: input)
+        let parser = Demangle.CppParser(symbol: sym)
+        #expect(parser.n_index != nil)
+        #expect(parser.symbol.name.distance(from: parser.symbol.name.startIndex, to: parser.n_index!) == 2)
+    }
 }
 
 struct SwiftTests {

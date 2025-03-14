@@ -18,7 +18,6 @@ public class MangledSymbol {
     public init(name: String) {
         self.name = name
         self.type = Compiler.unknown
-
         let _ = demangle()
     }
 
@@ -38,30 +37,26 @@ public class MangledSymbol {
     }
 }
 
-protocol Parser {
+public protocol Parser {
     var symbol: MangledSymbol { get set }
     var pref: String { get set }
     init(symbol: MangledSymbol)
     mutating func parse()
 }
 
-class CppParser: Parser {
-    var symbol: MangledSymbol
-    var pref = "_Z"
+public class CppParser: Parser {
+    public var symbol: MangledSymbol
+    public var pref = "_Z"
+    public var n_index: Optional<String.Index>
 
     public required init(symbol: MangledSymbol) {
         self.symbol = symbol
+        self.n_index = Optional.none
+        self.parse()
     }
 
-    public init(p: Parser) {
-        self.symbol = p.symbol
-    }
-
-    func parse() {
-        if let n_index = self.symbol.name.firstIndex(of: "N") {
-            print(n_index)
-            print(self.symbol.name[n_index...])
-        }
+    public func parse() {
+        n_index = self.symbol.name.firstIndex(of: "N")
     }
 }
 
