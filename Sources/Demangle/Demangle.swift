@@ -11,6 +11,31 @@ public let compilerType: [String: Compiler] = [
     "_Z": .itanium,
 ]
 
+// https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangle.builtin-type
+public let itaniumReturnType: [String: String] = [
+    "v": "void",
+    "w": "wchar_t",
+    "b": "bool",
+    "c": "char",
+    "a": "signed char",
+    "h": "unsigned char",
+    "s": "short",
+    "t": "unsigned short",
+    "i": "int",
+    "j": "unsigned int",
+    "l": "long",
+    "m": "unsigned long",
+    "x": "long long, __int64",
+    "y": "unsigned long long",
+    "n": "__int128",
+    "o": "unsigned __int128",
+    "f": "float",
+    "d": "double",
+    "e": "long double",
+    "g": "__float128",
+    "z": "ellipsis",
+]
+
 public class MangledSymbol {
     public let name: String
     public var type: Compiler
@@ -49,10 +74,23 @@ public class CppParser: Parser {
     public var pref = "_Z"
     public var n_index: String.Index? = Optional.none
     public var identifiers: [String] = []
+    public var return_type: String? = Optional.none
     public var demangled: String? = Optional.none
+
     public required init(symbol: MangledSymbol) {
         self.symbol = symbol
         self.parse()
+
+        print(self.symbol.name)
+        print(self.demangled_symbol())
+    }
+
+    public func demangled_symbol() -> String {
+        var res = ""
+        res += self.return_type! + " "
+        res += identifiers.joined(separator: "::")
+        res += "()"
+        return res
     }
 
     public func parse() {
@@ -60,6 +98,7 @@ public class CppParser: Parser {
         var ident_len: Int? = Optional.none
         var ident_start: String.Index? = Optional.none
         var ident_end: String.Index? = Optional.none
+        var end_index: String.Index? = Optional.none
 
         ident_start = self.symbol.name.firstIndex(where: { $0.wholeNumberValue != nil })
         ident_end = self.symbol.name.firstIndex(where: { $0.wholeNumberValue != nil })
@@ -78,8 +117,14 @@ public class CppParser: Parser {
                         self.symbol.name[
                             end_idx...self.symbol.name.index(end_idx, offsetBy: ident_len! - 1)]))
             }
-            ident_start = self.symbol.name[self.symbol.name.index(ident_end!, offsetBy: ident_len!)...].firstIndex(where: { $0.wholeNumberValue != nil })
+            end_index = self.symbol.name.index(ident_end!, offsetBy: ident_len!)
+            ident_start = self.symbol.name[end_index!...].firstIndex(where: {
+                $0.wholeNumberValue != nil
+            })
         }
+
+        let return_type_index = self.symbol.name.index(after: end_index!)
+        return_type = itaniumReturnType[String(self.symbol.name[return_type_index...]), default: "Unknown"]
     }
 }
 

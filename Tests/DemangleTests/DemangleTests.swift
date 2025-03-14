@@ -37,6 +37,7 @@ struct CppTests {
             parser.symbol.name.distance(from: parser.symbol.name.startIndex, to: parser.n_index!)
                 == 2)
         #expect(parser.identifiers.count == 3)
+        #expect(parser.return_type == "void")
     }
 }
 
