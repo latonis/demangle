@@ -22,7 +22,7 @@ struct RustTests {
 
 struct CppTests {
     @Test func type() {
-        let input = "_Z1hv"
+        let input = "_ZN9wikipedia7article6formatEv"
         let sym = Demangle.MangledSymbol(name: input)
         #expect(sym.type == Demangle.Compiler.itanium)
     }

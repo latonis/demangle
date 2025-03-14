@@ -1,4 +1,3 @@
-/// A description
 public enum Compiler: Sendable {
     case itanium
     case rust
@@ -6,11 +5,10 @@ public enum Compiler: Sendable {
     case unknown
 }
 
-public let compilerPrefixes: [String: Compiler] = [
+public let compilerType: [String: Compiler] = [
     "_R": Compiler.rust,
-    "_T": Compiler.swift,
+    "_T": .swift,
     "_Z": .itanium,
-
 ]
 
 public class MangledSymbol {
@@ -25,25 +23,57 @@ public class MangledSymbol {
     }
 
     public func demangle() -> String {
-        let p = Parser(symbol: self)
+        let prefix: String.SubSequence = self.name.prefix(2)
+        self.type = compilerType[String(prefix), default: Compiler.unknown]
+
+        var p: Parser;
+
+        switch self.type {
+        case .itanium: p = CppParser(symbol: self)
+        default: p = UnknownParser(symbol: self)
+        }
+
         p.parse()
         return ""
     }
 }
 
-class Parser {
-    let symbol: MangledSymbol
+protocol Parser {
+    var symbol: MangledSymbol { get set }
+    var pref: String { get set }
+    init(symbol: MangledSymbol)
+    mutating func parse()
+}
 
-    public init(symbol: MangledSymbol) {
+class CppParser: Parser {
+    var symbol: MangledSymbol
+    var pref = "_Z"
+
+    public required init(symbol: MangledSymbol) {
+        self.symbol = symbol
+    }
+
+    public init(p: Parser) {
+        self.symbol = p.symbol
+    }
+
+    func parse() {
+        if let n_index = self.symbol.name.firstIndex(of: "N") {
+            print(n_index)
+            print(self.symbol.name[n_index...])
+        }
+    }
+}
+
+class UnknownParser: Parser {
+    var symbol: MangledSymbol
+    var pref = ""
+
+    public required init(symbol: MangledSymbol) {
         self.symbol = symbol
     }
 
     func parse() {
-        prefix()
-    }
-
-    func prefix() {
-        let prefix: String.SubSequence = self.symbol.name.prefix(2)
-        self.symbol.type = compilerPrefixes[String(prefix), default: Compiler.unknown]
+        print("Encountered an unknown mangling scheme!")
     }
 }
