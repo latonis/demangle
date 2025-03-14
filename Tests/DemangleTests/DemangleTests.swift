@@ -31,8 +31,12 @@ struct CppTests {
         let input = "_ZN9wikipedia7article6formatEv"
         let sym = Demangle.MangledSymbol(name: input)
         let parser = Demangle.CppParser(symbol: sym)
+        print(parser.identifiers)
         #expect(parser.n_index != nil)
-        #expect(parser.symbol.name.distance(from: parser.symbol.name.startIndex, to: parser.n_index!) == 2)
+        #expect(
+            parser.symbol.name.distance(from: parser.symbol.name.startIndex, to: parser.n_index!)
+                == 2)
+        #expect(parser.identifiers.count == 3)
     }
 }
 
