@@ -12,7 +12,7 @@ public let compilerType: [String: Compiler] = [
 ]
 
 // https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangle.builtin-type
-public let itaniumReturnType: [String: String] = [
+public let itaniumParamTypes: [String: String] = [
     "v": "void",
     "w": "wchar_t",
     "b": "bool",
@@ -74,7 +74,7 @@ public class CppParser: Parser {
     public var pref = "_Z"
     public var n_index: String.Index? = Optional.none
     public var identifiers: [String] = []
-    public var return_type: String? = Optional.none
+    public var param_types: [String] = []
     public var demangled: String? = Optional.none
 
     public required init(symbol: MangledSymbol) {
@@ -87,9 +87,11 @@ public class CppParser: Parser {
 
     public func demangled_symbol() -> String {
         var res = ""
-        res += self.return_type! + " "
         res += identifiers.joined(separator: "::")
-        res += "()"
+        res += "("
+        res += param_types.filter( { $0 != "void"
+        }).joined(separator: ", ")
+        res += ")"
         return res
     }
 
@@ -124,7 +126,7 @@ public class CppParser: Parser {
         }
 
         let return_type_index = self.symbol.name.index(after: end_index!)
-        return_type = itaniumReturnType[String(self.symbol.name[return_type_index...]), default: "Unknown"]
+        param_types.append(itaniumParamTypes[String(self.symbol.name[return_type_index...]), default: "Unknown"])
     }
 }
 

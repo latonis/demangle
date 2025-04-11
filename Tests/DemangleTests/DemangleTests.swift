@@ -37,7 +37,16 @@ struct CppTests {
             parser.symbol.name.distance(from: parser.symbol.name.startIndex, to: parser.n_index!)
                 == 2)
         #expect(parser.identifiers.count == 3)
-        #expect(parser.return_type == "void")
+        #expect(parser.param_types == ["void"])
+        #expect(parser.demangled_symbol() == "wikipedia::article::format()")
+    }
+
+    @Test func parse_complicated() {
+        let input = "_ZN9wikipedia7article8print_toERSo"
+        let sym = Demangle.MangledSymbol(name: input)
+        let parser = Demangle.CppParser(symbol: sym)
+        #expect(parser.param_types == ["std::ostream&"])
+        #expect(parser.demangled_symbol() == "wikipedia::article::print_to()")
     }
 }
 
