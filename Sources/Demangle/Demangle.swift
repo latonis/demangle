@@ -141,14 +141,20 @@ public class CppParser: Parser {
         //  else increment by one
         // do until end
 
-        var s_idx = self.symbol.name.index(after: end_index!)
+        var s_idx = end_index!
         var e_idx = s_idx
+
+        // check for end of function notifier
+        if String(self.symbol.name[s_idx...e_idx]) == "E" {
+            print("End of function")
+            s_idx = self.symbol.name.index(after: e_idx)
+            e_idx = s_idx
+        }
+
         var ref = false
 
         while e_idx < self.symbol.name.endIndex {
-            print("Current string \(String(self.symbol.name[s_idx...e_idx]))")
             let return_type = String(self.symbol.name[s_idx...e_idx])
-
             if return_type == "R" {
                 ref = true
                 s_idx = self.symbol.name.index(after: e_idx)

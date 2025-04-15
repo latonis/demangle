@@ -50,13 +50,21 @@ struct CppTests {
         #expect(parser.param_types == ["int"])
     }
 
-     @Test func parse_complicated() {
-         let input = "_ZN9wikipedia7article8print_toERSo"
-         let sym = Demangle.MangledSymbol(name: input)
-         let parser = Demangle.CppParser(symbol: sym)
-         #expect(parser.param_types == ["std::ostream&"])
-         #expect(parser.demangled_symbol() == "wikipedia::article::print_to(std::ostream&)")
-     }
+    @Test func parse_complicated() {
+        let input = "_ZN9wikipedia7article8print_toERSo"
+        let sym = Demangle.MangledSymbol(name: input)
+        let parser = Demangle.CppParser(symbol: sym)
+        #expect(parser.param_types == ["std::ostream&"])
+        #expect(parser.demangled_symbol() == "wikipedia::article::print_to(std::ostream&)")
+    }
+
+    @Test func parse_two_params() {
+        let input: String = "__Z3addii"
+        let sym = Demangle.MangledSymbol(name: input)
+        let parser = Demangle.CppParser(symbol: sym)
+        #expect(parser.param_types == ["int", "int"])
+        #expect(parser.demangled_symbol() == "add(int, int)")
+    }
 }
 
 struct SwiftTests {
