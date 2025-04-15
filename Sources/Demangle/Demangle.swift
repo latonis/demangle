@@ -35,6 +35,10 @@ public let itaniumParamTypes: [String: String] = [
     "e": "long double",
     "g": "__float128",
     "z": "ellipsis",
+    "St": "::std::",
+    "Sa": "::std::allocator::",
+    "Sb": "::std::basic_string",
+    "So": "::std::ostream",
 ]
 
 public class MangledSymbol {
@@ -50,7 +54,6 @@ public class MangledSymbol {
     public func demangle() -> String {
         var prefix_length = 2
         if self.name.hasPrefix("__") {
-            // remove the first two underscores
             prefix_length = 3
         }
         let prefix: String.SubSequence = self.name.prefix(prefix_length)
@@ -132,11 +135,38 @@ public class CppParser: Parser {
             })
         }
 
-        let return_type_index: String.Index = self.symbol.name.index(after: end_index!)
-        let return_type = String(self.symbol.name[return_type_index...])
+        // start at end_index
+        //increment by one and check map
+        //  if a check: set end_index to the amount incremented by
+        //  else increment by one
+        // do until end
 
-        param_types.append(
-            itaniumParamTypes[return_type, default: "Unknown"])
+        var s_idx = self.symbol.name.index(after: end_index!)
+        var e_idx = s_idx
+        var ref = false
+
+        while e_idx < self.symbol.name.endIndex {
+            print("Current string \(String(self.symbol.name[s_idx...e_idx]))")
+            let return_type = String(self.symbol.name[s_idx...e_idx])
+
+            if return_type == "R" {
+                ref = true
+                s_idx = self.symbol.name.index(after: e_idx)
+            }
+            if itaniumParamTypes.keys.contains(return_type) {
+                var val = itaniumParamTypes[return_type, default: "Uknown"]
+                if ref {
+                    ref = false
+                    val.append("&")
+                }
+                if val.hasPrefix("::") {
+                    val.removeFirst(2)
+                }
+                self.param_types.append(val)
+                s_idx = self.symbol.name.index(after: e_idx)
+            }
+            e_idx = self.symbol.name.index(after: e_idx)
+        }
     }
 }
 

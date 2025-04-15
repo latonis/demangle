@@ -55,7 +55,7 @@ struct CppTests {
          let sym = Demangle.MangledSymbol(name: input)
          let parser = Demangle.CppParser(symbol: sym)
          #expect(parser.param_types == ["std::ostream&"])
-         #expect(parser.demangled_symbol() == "wikipedia::article::print_to()")
+         #expect(parser.demangled_symbol() == "wikipedia::article::print_to(std::ostream&)")
      }
 }
 
