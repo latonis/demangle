@@ -41,13 +41,22 @@ struct CppTests {
         #expect(parser.demangled_symbol() == "wikipedia::article::format()")
     }
 
-    @Test func parse_complicated() {
-        let input = "_ZN9wikipedia7article8print_toERSo"
+    @Test func parse_generated() {
+        let input = "__ZN4test3fooEi"
         let sym = Demangle.MangledSymbol(name: input)
         let parser = Demangle.CppParser(symbol: sym)
-        #expect(parser.param_types == ["std::ostream&"])
-        #expect(parser.demangled_symbol() == "wikipedia::article::print_to()")
+
+        #expect(parser.demangled_symbol() == "test::foo(int)")
+        #expect(parser.param_types == ["int"])
     }
+
+     @Test func parse_complicated() {
+         let input = "_ZN9wikipedia7article8print_toERSo"
+         let sym = Demangle.MangledSymbol(name: input)
+         let parser = Demangle.CppParser(symbol: sym)
+         #expect(parser.param_types == ["std::ostream&"])
+         #expect(parser.demangled_symbol() == "wikipedia::article::print_to()")
+     }
 }
 
 struct SwiftTests {

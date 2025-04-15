@@ -9,6 +9,7 @@ public let compilerType: [String: Compiler] = [
     "_R": Compiler.rust,
     "_T": .swift,
     "_Z": .itanium,
+    "__Z": .itanium,
 ]
 
 // https://itanium-cxx-abi.github.io/cxx-abi/abi.html#mangle.builtin-type
@@ -47,7 +48,12 @@ public class MangledSymbol {
     }
 
     public func demangle() -> String {
-        let prefix: String.SubSequence = self.name.prefix(2)
+        var prefix_length = 2
+        if self.name.hasPrefix("__") {
+            // remove the first two underscores
+            prefix_length = 3
+        }
+        let prefix: String.SubSequence = self.name.prefix(prefix_length)
         self.type = compilerType[String(prefix), default: Compiler.unknown]
 
         var p: Parser
@@ -89,7 +95,8 @@ public class CppParser: Parser {
         var res = ""
         res += identifiers.joined(separator: "::")
         res += "("
-        res += param_types.filter( { $0 != "void"
+        res += param_types.filter({
+            $0 != "void"
         }).joined(separator: ", ")
         res += ")"
         return res
@@ -125,8 +132,11 @@ public class CppParser: Parser {
             })
         }
 
-        let return_type_index = self.symbol.name.index(after: end_index!)
-        param_types.append(itaniumParamTypes[String(self.symbol.name[return_type_index...]), default: "Unknown"])
+        let return_type_index: String.Index = self.symbol.name.index(after: end_index!)
+        let return_type = String(self.symbol.name[return_type_index...])
+
+        param_types.append(
+            itaniumParamTypes[return_type, default: "Unknown"])
     }
 }
 
