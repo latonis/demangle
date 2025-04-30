@@ -54,8 +54,9 @@ struct CppTests {
         let input = "_ZN9wikipedia7article8print_toERSo"
         let sym = Demangle.MangledSymbol(name: input)
         let parser = Demangle.CppParser(symbol: sym)
-        #expect(parser.param_types == ["std::ostream&"])
-        #expect(parser.demangled_symbol() == "wikipedia::article::print_to(std::ostream&)")
+        #expect(parser.param_types == ["std::ostream"])
+        #expect(parser.qualifiers == ["&"])
+        #expect(parser.demangled_symbol() == "wikipedia::article::print_to(std::ostream &)")
     }
 
     @Test func parse_two_params() {
@@ -64,6 +65,15 @@ struct CppTests {
         let parser = Demangle.CppParser(symbol: sym)
         #expect(parser.param_types == ["int", "int"])
         #expect(parser.demangled_symbol() == "add(int, int)")
+    }
+
+    @Test func parse_qualifiers() {
+        let input: String = "__ZN4oobe17folderExitsAtPathERKSs"
+        let sym = Demangle.MangledSymbol(name: input)
+        let parser = Demangle.CppParser(symbol: sym)
+        #expect(parser.param_types == ["std::string"])
+        #expect(parser.qualifiers == ["&", "const"])
+        #expect(parser.demangled_symbol() == "oobe::folderExitsAtPath(std::string const&)")
     }
 }
 

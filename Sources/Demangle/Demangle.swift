@@ -39,6 +39,18 @@ public let itaniumParamTypes: [String: String] = [
     "Sa": "::std::allocator::",
     "Sb": "::std::basic_string",
     "So": "::std::ostream",
+    "Ss": "::std::string",
+]
+
+//   <CV-qualifiers>      ::= [r] [V] [K] 	  # restrict (C99), volatile, const
+//   <ref-qualifier>      ::= R              # & ref-qualifier
+//   <ref-qualifier>      ::= O              # && ref-qualifier
+public let itaniumQualifiers: [String: String] = [
+    "r": "restrict",
+    "V": "volatile",
+    "K": "const",
+    "R": "&",
+    "O": "&&",
 ]
 
 public class MangledSymbol {
@@ -84,6 +96,7 @@ public class CppParser: Parser {
     public var n_index: String.Index? = Optional.none
     public var identifiers: [String] = []
     public var param_types: [String] = []
+    public var qualifiers: [String] = []
     public var demangled: String? = Optional.none
 
     public required init(symbol: MangledSymbol) {
@@ -101,12 +114,18 @@ public class CppParser: Parser {
         res += param_types.filter({
             $0 != "void"
         }).joined(separator: ", ")
+        if qualifiers.count > 0 {
+            // TODO: need to sort the qualifiers based on the order of the qualifiers in the original map
+            res += " "
+            res += qualifiers.joined(separator: "")
+        }
         res += ")"
         return res
     }
 
     public func parse() {
         n_index = self.symbol.name.firstIndex(of: "N")
+
         var ident_len: Int? = Optional.none
         var ident_start: String.Index? = Optional.none
         var ident_end: String.Index? = Optional.none
@@ -151,20 +170,16 @@ public class CppParser: Parser {
             e_idx = s_idx
         }
 
-        var ref = false
-
         while e_idx < self.symbol.name.endIndex {
             let return_type = String(self.symbol.name[s_idx...e_idx])
-            if return_type == "R" {
-                ref = true
+            print("return_type: \(return_type)")
+
+            if itaniumQualifiers.keys.contains(return_type) {
+                var val: String = itaniumQualifiers[return_type, default: "Unknown"]
+                qualifiers.append(val)
                 s_idx = self.symbol.name.index(after: e_idx)
-            }
-            if itaniumParamTypes.keys.contains(return_type) {
-                var val = itaniumParamTypes[return_type, default: "Uknown"]
-                if ref {
-                    ref = false
-                    val.append("&")
-                }
+            } else if itaniumParamTypes.keys.contains(return_type) {
+                var val = itaniumParamTypes[return_type, default: "Unknown"]
                 if val.hasPrefix("::") {
                     val.removeFirst(2)
                 }
