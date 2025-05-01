@@ -45,6 +45,8 @@ public let itaniumParamTypes: [String: String] = [
 //   <CV-qualifiers>      ::= [r] [V] [K] 	  # restrict (C99), volatile, const
 //   <ref-qualifier>      ::= R              # & ref-qualifier
 //   <ref-qualifier>      ::= O              # && ref-qualifier
+public let itaniumQualifierOrder = ["restrict", "volatile", "const", "&", "&&"]
+
 public let itaniumQualifiers: [String: String] = [
     "r": "restrict",
     "V": "volatile",
@@ -115,7 +117,10 @@ public class CppParser: Parser {
             $0 != "void"
         }).joined(separator: ", ")
         if qualifiers.count > 0 {
-            // TODO: need to sort the qualifiers based on the order of the qualifiers in the original map
+            qualifiers.sort {
+                itaniumQualifierOrder.firstIndex(of: $0)! < itaniumQualifierOrder.firstIndex(
+                    of: $1)!
+            }
             res += " "
             res += qualifiers.joined(separator: "")
         }
@@ -175,7 +180,7 @@ public class CppParser: Parser {
             print("return_type: \(return_type)")
 
             if itaniumQualifiers.keys.contains(return_type) {
-                var val: String = itaniumQualifiers[return_type, default: "Unknown"]
+                let val: String = itaniumQualifiers[return_type, default: "Unknown"]
                 qualifiers.append(val)
                 s_idx = self.symbol.name.index(after: e_idx)
             } else if itaniumParamTypes.keys.contains(return_type) {

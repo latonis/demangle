@@ -72,7 +72,7 @@ struct CppTests {
         let sym = Demangle.MangledSymbol(name: input)
         let parser = Demangle.CppParser(symbol: sym)
         #expect(parser.param_types == ["std::string"])
-        #expect(parser.qualifiers == ["&", "const"])
+        #expect(parser.qualifiers == ["const", "&"])
         #expect(parser.demangled_symbol() == "oobe::folderExitsAtPath(std::string const&)")
     }
 }
